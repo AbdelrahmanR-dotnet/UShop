@@ -1,0 +1,95 @@
+﻿@model UShop.Models.CreditCard
+
+@{
+    ViewData["Title"] = "Add Credit Card";
+}
+
+<h2 class="mb-4">@ViewData["Title"]</h2>
+
+<form asp-action="Create" method="post" novalidate>
+    <div class="mb-3 col-md-6">
+        <label asp-for="CardNumber" class="form-label"></label>
+        <input asp-for="CardNumber" type="text"
+               class="form-control form-control-sm rounded-3"
+               placeholder="#### #### #### ####" maxlength="19" />
+        <span asp-validation-for="CardNumber" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3 col-md-6">
+        <label asp-for="CardholderName" class="form-label"></label>
+        <input asp-for="CardholderName" type="text"
+               class="form-control form-control-sm rounded-3"
+               placeholder="Name on card" />
+        <span asp-validation-for="CardholderName" class="text-danger"></span>
+    </div>
+
+    <div class="row mb-3 col-md-6">
+        <div class="col-6">
+            <label asp-for="ExpiryMonth" class="form-label"></label>
+            <select asp-for="ExpiryMonth" class="form-select form-select-sm rounded-3">
+                <option value="">MM</option>
+                @for (int i = 1; i <= 12; i++)
+                {
+                    <option value="@i">@i.ToString("D2")</option>
+                }
+            </select>
+            <span asp-validation-for="ExpiryMonth" class="text-danger"></span>
+        </div>
+
+        <div class="col-6">
+            <label asp-for="ExpiryYear" class="form-label"></label>
+            <select asp-for="ExpiryYear" class="form-select form-select-sm rounded-3">
+                <option value="">YY</option>
+                @for (int y = DateTime.Now.Year; y <= DateTime.Now.Year + 15; y++)
+                {
+                    <option value="@y">@y</option>
+                }
+            </select>
+            <span asp-validation-for="ExpiryYear" class="text-danger"></span>
+        </div>
+    </div>
+
+    <div class="mb-3 col-md-4">
+        <label asp-for="CVV" class="form-label"></label>
+        <input asp-for="CVV" type="password"
+               class="form-control form-control-sm rounded-3"
+               maxlength="4" placeholder="CVV"
+               pattern="\d*" inputmode="numeric" />
+        <span asp-validation-for="CVV" class="text-danger"></span>
+    </div>
+
+    <div class="mt-3">
+        <button type="submit" class="btn btn-success btn-sm me-2">Save</button>
+        <a asp-action="Index" class="btn btn-secondary btn-sm">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        // Mask Card Number input (#### #### #### ####)
+        const cardInput = document.querySelector("input[name='CardNumber']");
+        cardInput.addEventListener("input", function (e) {
+            let value = e.target.value.replace(/\D/g, "");
+            value = value.replace(/(.{4})/g, "$1 ").trim();
+            e.target.value = value;
+        });
+
+        // Prevent submission of expired card
+        const form = document.querySelector("form");
+        form.addEventListener("submit", function (e) {
+            const month = parseInt(document.querySelector("select[name='ExpiryMonth']").value);
+            const year = parseInt(document.querySelector("select[name='ExpiryYear']").value);
+
+            const today = new Date();
+            const currentMonth = today.getMonth() + 1;
+            const currentYear = today.getFullYear();
+
+            if (!month || !year || year < currentYear || (year === currentYear && month < currentMonth)) {
+                e.preventDefault();
+                alert("The card is expired or month/year not selected.");
+            }
+        });
+    </script>
+}

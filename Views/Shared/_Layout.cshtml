@@ -1,0 +1,139 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - UShop</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    
+    <style>
+        /* Custom tweaks for a premium feel */
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .navbar-brand { font-weight: 700; letter-spacing: 1px; color: #0d6efd !important; }
+        .nav-link { font-weight: 500; transition: color 0.3s; }
+        .nav-link:hover { color: #0d6efd !important; }
+        .footer { background-color: #212529; color: #adb5bd; }
+        .main-content { min-height: 80vh; padding-bottom: 3rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+            <div class="container">
+                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">
+                    <i class="fa-solid fa-store me-2"></i>UShop
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-toggle="target" aria-controls="navbarSupportedContent"
+                        aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Products" asp-action="Shopping">Shop Now</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Categories" asp-action="Index">Categories</a>
+                        </li>
+                    </ul>
+                    
+                    <ul class="navbar-nav align-items-center">
+                        <li class="nav-item me-3">
+                            <form class="d-flex" asp-controller="Products" asp-action="Shopping" method="get">
+                                <div class="input-group">
+                                    <input class="form-control form-control-sm" type="search" name="searchString" placeholder="Search..." aria-label="Search">
+                                    <button class="btn btn-outline-primary btn-sm" type="submit"><i class="fa-solid fa-magnifying-glass"></i></button>
+                                </div>
+                            </form>
+                        </li>
+
+                        @if (User.Identity!.IsAuthenticated)
+                        {
+                            <li class="nav-item me-3">
+                                <a class="nav-link position-relative" asp-controller="Cart" asp-action="Index">
+                                    <i class="fa-solid fa-cart-shopping fs-5"></i>
+                                    <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                                        <span class="visually-hidden">New alerts</span>
+                                    </span>
+                                </a>
+                            </li>
+                            <li class="nav-item dropdown">
+                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fa-solid fa-user-circle fs-5 me-1"></i> @User.Identity.Name
+                                </a>
+                                <ul class="dropdown-menu dropdown-menu-end shadow border-0" aria-labelledby="navbarDropdown">
+                                    <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile"><i class="fa-solid fa-user me-2"></i>My Profile</a></li>
+                                    <li><a class="dropdown-item" asp-controller="Orders" asp-action="Index"><i class="fa-solid fa-box-open me-2"></i>My Orders</a></li>
+                                    
+                                    @if (User.IsInRole("Admin"))
+                                    {
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li><h6 class="dropdown-header">Admin Panel</h6></li>
+                                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Manage Admins</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Customer" asp-action="Index">Manage Customers</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Seller" asp-action="Index">Manage Sellers</a></li>
+                                    }
+                                    
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li>
+                                        <form class="form-inline" asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="dropdown-item text-danger"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</button>
+                                        </form>
+                                    </li>
+                                </ul>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="Account" asp-action="Login">Login</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="btn btn-primary btn-sm ms-2 rounded-pill px-3" asp-controller="Account" asp-action="Register">Sign Up</a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container main-content" style="margin-top: 80px;">
+        <main role="main" class="pb-3">
+            @if (TempData["Success"] != null || TempData["Message"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show shadow-sm mt-3" role="alert">
+                    <i class="fa-solid fa-circle-check me-2"></i> @(TempData["Success"] ?? TempData["Message"])
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show shadow-sm mt-3" role="alert">
+                    <i class="fa-solid fa-circle-exclamation me-2"></i> @TempData["Error"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="footer mt-auto py-4">
+        <div class="container text-center">
+            <p class="mb-1">&copy; @DateTime.Now.Year - UShop Platform. Built with high-performance .NET Core.</p>
+            <div class="d-flex justify-content-center gap-3 mt-2">
+                <a href="#" class="text-light text-decoration-none"><i class="fa-brands fa-github fs-5"></i></a>
+                <a href="#" class="text-light text-decoration-none"><i class="fa-brands fa-linkedin fs-5"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

@@ -1,0 +1,48 @@
+﻿@model UShop.Models.Admin
+
+@{
+    ViewData["Title"] = "Edit Admin";
+}
+
+<div class="hero">
+    <h1>@ViewData["Title"]</h1>
+    <p>Edit the details of the current admin</p>
+</div>
+
+<div class="card shadow-sm rounded-3 p-4">
+    <form asp-action="Edit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <div class="mb-3">
+            <label asp-for="FullName" class="form-label"></label>
+            <input asp-for="FullName" class="form-control" placeholder="Enter full name..." />
+            <span asp-validation-for="FullName" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Email" class="form-label"></label>
+            <input asp-for="Email" class="form-control" placeholder="example@email.com" />
+            <span asp-validation-for="Email" class="text-danger"></span>
+        </div>
+
+        <div class="mb-3">
+            <label asp-for="Description" class="form-label"></label>
+            <input asp-for="Description" class="form-control" placeholder="Enter description..." />
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <button type="submit" class="btn btn-ushop">Save Changes</button>
+        <a asp-action="Index" class="btn btn-secondary ms-2">Back</a>
+    </form>
+</div>
+
+<div>
+    <a asp-action="Index">Back to List</a>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

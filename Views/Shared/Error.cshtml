@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="container mt-4">
+    <div class="alert alert-danger" role="alert">
+        <h4 class="alert-heading">An Error Occurred!</h4>
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <p>@ViewBag.ErrorMessage</p>
+        }
+        else
+        {
+            <p>Sorry, an unexpected error occurred. Please try again.</p>
+        }
+        <hr>
+        <p class="mb-0">
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">Return to Home</a>
+        </p>
+    </div>
+</div>

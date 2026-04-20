@@ -1,0 +1,37 @@
+﻿@model IEnumerable<UShop.Models.Seller>
+
+@{
+    ViewData["Title"] = "Browse Sellers";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center mb-4 fw-bold text-primary">👨‍💼 Our Sellers</h2>
+
+    <div class="row">
+        @foreach (var seller in Model)
+        {
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 shadow-sm border-0 text-center p-3">
+                    <img src="~/images/seller-avatar.png"
+                         alt="@seller.FullName"
+                         class="rounded-circle mb-3"
+                         style="width:100px;height:100px;object-fit:cover;" />
+
+                    <h5 class="fw-bold">@seller.FullName</h5>
+                    <p class="text-muted">@seller.Email</p>
+                    @if (!string.IsNullOrEmpty(seller.PhoneNumber))
+                    {
+                        <p><i class="fa-solid fa-phone me-2 text-success"></i>@seller.PhoneNumber</p>
+                    }
+                    <p class="fw-semibold text-primary">
+                        Products: @seller.Products.Count
+                    </p>
+                    <a asp-controller="Products" asp-action="BySeller" asp-route-sellerId="@seller.Id"
+                       class="btn btn-outline-primary fw-bold">
+                        View Products
+                    </a>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,71 @@
+﻿@model IEnumerable<UShop.Models.Category>
+
+@{
+ViewData["Title"] = "Welcome to UShop";
+}
+
+<div class="container-fluid bg-primary text-white text-center py-5 mb-5 rounded-3 shadow">
+    <div class="py-5">
+        <h1 class="display-4 fw-bold mb-3">Discover Amazing Products</h1>
+        <p class="lead mb-4">Shop the latest trends with the best prices. Fast, secure, and reliable.</p>
+        <a asp-controller="Products" asp-action="Shopping" class="btn btn-light btn-lg px-5 rounded-pill shadow-sm fw-bold text-primary">
+            Start Shopping <i class="fa-solid fa-arrow-right ms-2"></i>
+        </a>
+    </div>
+</div>
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="fw-bold text-dark"><i class="fa-solid fa-layer-group me-2 text-primary"></i> Shop by Category</h2>
+        <a asp-controller="Categories" asp-action="Index" class="text-decoration-none text-primary fw-semibold">View All</a>
+    </div>
+
+    @if (Model != null && Model.Any())
+    {
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+        @foreach (var category in Model)
+        {
+        <div class="col">
+            <div class="card h-100 border-0 shadow-sm category-card transition-hover">
+                @if (!string.IsNullOrEmpty(category.ImageUrl))
+                {
+                <img src="@category.ImageUrl" class="card-img-top" alt="@category.Name" style="height: 200px; object-fit: cover;">
+                }
+                else
+                {
+                <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                    <i class="fa-solid fa-image text-muted fs-1"></i>
+                </div>
+                }
+                <div class="card-body text-center">
+                    <h5 class="card-title fw-bold">@category.Name</h5>
+                    <p class="card-text text-muted small text-truncate">@category.Description</p>
+                </div>
+                <div class="card-footer bg-white border-0 text-center pb-3">
+                    <a asp-controller="Products" asp-action="Shopping" asp-route-categoryId="@category.Id" class="btn btn-outline-primary btn-sm rounded-pill w-100">
+                        Browse <i class="fa-solid fa-angle-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+    }
+    else
+    {
+    <div class="alert alert-info text-center py-5 shadow-sm border-0">
+        <i class="fa-solid fa-inbox fs-1 text-muted mb-3 d-block"></i>
+        <h5 class="text-muted">No categories available at the moment.</h5>
+    </div>
+    }
+</div>
+
+<style>
+    .transition-hover {
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .transition-hover:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important;
+    }
+</style>

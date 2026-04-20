@@ -1,0 +1,31 @@
+﻿@model Customer
+
+<h2>Customer Profile</h2>
+
+<div class="card p-3 shadow-sm mb-3" style="max-width: 500px;">
+    <h4>@Model.FullName</h4>
+    <p><strong>Email:</strong> @Model.Email</p>
+    <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+    <p><strong>Address:</strong> @Model.Address</p>
+</div>
+
+<h3>Credit Card</h3>
+
+@if (Model.CreditCard == null)
+{
+    <p>No card found.</p>
+    <a asp-action="Create" class="btn btn-primary">Add Card</a>
+}
+else
+{
+    <div class="card p-3 shadow-sm" style="max-width: 500px;">
+        <p><strong>Cardholder:</strong> @Model.CreditCard.CardholderName</p>
+        <p><strong>Card Number:</strong> **** **** **** @Model.CreditCard.CardNumber.Substring(Model.CreditCard.CardNumber.Length - 4)</p>
+        <p><strong>Expiry:</strong> @Model.CreditCard.ExpiryMonth/@Model.CreditCard.ExpiryYear</p>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Edit" asp-route-id="@Model.CreditCard.Id" class="btn btn-warning">Edit</a>
+        <a asp-action="Delete" asp-route-id="@Model.CreditCard.Id" class="btn btn-danger">Delete</a>
+    </div>
+}

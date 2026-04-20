@@ -1,0 +1,63 @@
+# Ignore Visual Studio temporary files, build results, and cache
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Build results
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Tt]emp/
+TestResults/
+obj/
+bin/
+log/
+temp/
+
+# Visual Studio profiler
+*.psess
+*.vsp
+*.vspx
+*.sap
+
+# User-specific files
+*.rsuser
+*.userprefs
+
+# NuGet
+*.nupkg
+*.snupkg
+*.nuspec
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Microsoft Azure
+csx/
+*.build.csdef
+
+# Others
+_ReSharper*/
+*.DotSettings.user
+*.dotCover
+*.coverage
+*.coveragexml
+*.orig
+
+# Rider
+.idea/
+*.iml
+
+# Visual Studio Code
+.vscode/
+
+# Others you don’t want in Git
+*.dbmdl
+*.bak
+*.ldf
+*.mdf
+
+appsettings.Development.json
+appsettings.json

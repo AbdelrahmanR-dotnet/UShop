@@ -1,0 +1,19 @@
+﻿@model CreditCard
+
+<h2>Delete Credit Card</h2>
+
+<div class="alert alert-danger">
+    Are you sure you want to delete this credit card?
+</div>
+
+<div class="card p-3 mb-3" style="max-width: 400px;">
+    <p><strong>Cardholder:</strong> @Model.CardholderName</p>
+    <p><strong>Card Number:</strong> **** **** **** @Model.CardNumber.Substring(Model.CardNumber.Length - 4)</p>
+    <p><strong>Expiry:</strong> @Model.ExpiryMonth/@Model.ExpiryYear</p>
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Delete</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+</form>

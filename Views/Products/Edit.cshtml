@@ -1,0 +1,85 @@
+﻿@model UShop.Models.ViewModels.ProductVM
+
+@{
+	ViewData["Title"] = "Edit Product";
+}
+
+<h3 class="mb-4">Edit Product</h3>
+<hr />
+
+<div class="row">
+	<div class="col-lg-10 col-xl-8">
+		<form asp-action="Edit" enctype="multipart/form-data">
+			<div asp-validation-summary="ModelOnly" class="text-danger"></div>
+			<input type="hidden" asp-for="Id" />
+
+			<!-- Row 1: Name + Price -->
+			<div class="row">
+				<div class="col-md-8 mb-3">
+					<label asp-for="Name" class="form-label">Product Name</label>
+					<input asp-for="Name" class="form-control" placeholder="Enter product name" />
+					<span asp-validation-for="Name" class="text-danger"></span>
+				</div>
+				<div class="col-md-4 mb-3">
+					<label asp-for="Price" class="form-label">Price</label>
+					<input asp-for="Price" class="form-control" type="number" step="0.01" placeholder="0.00" />
+					<span asp-validation-for="Price" class="text-danger"></span>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-4 mb-3">
+					<label asp-for="StockQuantity" class="form-label">Stock Quantity</label>
+					<input asp-for="StockQuantity" class="form-control" type="number" placeholder="0" />
+					<span asp-validation-for="StockQuantity" class="text-danger"></span>
+				</div>
+				<div class="col-md-4 mb-3">
+					<label asp-for="CategoryId" class="form-label">Category</label>
+					<select asp-for="CategoryId" class="form-select" asp-items="@Model?.CategoryList">
+						<option value="">-- Select Category --</option>
+					</select>
+					<span asp-validation-for="CategoryId" class="text-danger"></span>
+				</div>
+				<div class="col-md-4 mb-3">
+					<label asp-for="SellerId" class="form-label">Seller</label>
+					<select asp-for="SellerId" class="form-select" asp-items="@Model?.SellerList">
+						<option value="">-- Select Seller --</option>
+					</select>
+					<span asp-validation-for="SellerId" class="text-danger"></span>
+				</div>
+			</div>
+
+			<div class="row">
+				<div class="col-md-6 mb-3">
+					<label asp-for="ImageFile" class="form-label">Product Image</label>
+					<input type="file" asp-for="ImageFile" class="form-control" accept="image/*" />
+					<span asp-validation-for="ImageFile" class="text-danger"></span>
+					<div class="form-text">Choose an image file (JPG, PNG, etc.)</div>
+					@if (!string.IsNullOrEmpty(Model.ImageUrl))
+					{
+						<div class="mt-2">
+							<p class="mb-1">Current Image:</p>
+							<img src="@Model.ImageUrl" alt="Product Image" class="img-thumbnail" style="max-height:150px;" />
+						</div>
+					}
+				</div>
+				<div class="col-md-6 mb-3">
+					<label asp-for="Description" class="form-label">Description</label>
+					<textarea asp-for="Description" class="form-control" rows="3" placeholder="Enter product description"></textarea>
+					<span asp-validation-for="Description" class="text-danger"></span>
+				</div>
+			</div>
+
+			<div class="mt-4">
+				<input type="submit" value="Save Changes" class="btn btn-ushop me-2" />
+				<a asp-action="Index" class="btn btn-secondary">Cancel</a>
+			</div>
+		</form>
+	</div>
+</div>
+
+@section Scripts {
+	@{
+		await Html.RenderPartialAsync("_ValidationScriptsPartial");
+	}
+}

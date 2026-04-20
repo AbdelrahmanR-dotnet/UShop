@@ -1,0 +1,79 @@
+﻿@model UShop.Models.Category
+@{
+    ViewData["Title"] = "Create Category";
+}
+
+<h1>Create New Category</h1>
+<hr />
+
+<!-- Success & Error Messages -->
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <form asp-action="Create" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                    <div class="row">
+                        <!-- Left: Name & Description -->
+                        <div class="col-md-8">
+                            <!-- Name -->
+                            <div class="form-group mb-3">
+                                <label asp-for="Name" class="form-label"></label>
+                                <input asp-for="Name" class="form-control" placeholder="Enter category name" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+
+                            <!-- Description -->
+                            <div class="form-group mb-3">
+                                <label asp-for="Description" class="form-label"></label>
+                                <textarea asp-for="Description" class="form-control" rows="4" placeholder="Enter category description (optional)"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Right: Image Upload -->
+                        <div class="col-md-4">
+                            <div class="form-group mb-3">
+                                <label asp-for="ImageFile" class="form-label">Upload Category Image</label>
+                                <input asp-for="ImageFile" type="file" class="form-control" accept="image/*" />
+                                <span asp-validation-for="ImageFile" class="text-danger"></span>
+                                <div class="form-text">Choose an image file (JPG, PNG, etc.)</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="form-group mt-4">
+                        <button type="submit" class="btn btn-ushop me-2">Create Category</button>
+                        <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Font Awesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -1,0 +1,99 @@
+﻿@model IEnumerable<UShop.Models.Product>
+
+@{
+    ViewData["Title"] = "Shop Products";
+}
+
+<div class="container mt-4">
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-6">
+            <h2 class="fw-bold"><i class="fa-solid fa-tags text-primary me-2"></i>All Products</h2>
+        </div>
+        <div class="col-md-6">
+            <form asp-action="Shopping" method="get" class="d-flex justify-content-md-end gap-2">
+                <input type="text" name="searchString" value="@ViewBag.SearchString" class="form-control w-auto" placeholder="Search products..." />
+                <select name="categoryId" class="form-select w-auto" asp-items="ViewBag.Categories">
+                    <option value="">All Categories</option>
+                </select>
+                <button type="submit" class="btn btn-primary">Filter</button>
+                <a asp-action="Shopping" class="btn btn-outline-secondary">Clear</a>
+            </form>
+        </div>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-light text-center py-5 shadow-sm border-0">
+            <i class="fa-solid fa-box-open fs-1 text-muted mb-3 d-block"></i>
+            <h4 class="text-muted">No products found matching your criteria.</h4>
+        </div>
+    }
+    else
+    {
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4">
+            @foreach (var item in Model)
+            {
+                <div class="col">
+                    <div class="card h-100 border-0 shadow-sm product-card transition-hover">
+                        <div class="position-relative bg-light" style="height: 250px; overflow: hidden;">
+                            @if (!string.IsNullOrEmpty(item.ImageUrl))
+                            {
+                                <img src="@item.ImageUrl" class="w-100 h-100" style="object-fit: cover;" alt="@item.Name" />
+                            }
+                            else
+                            {
+                                <div class="w-100 h-100 d-flex justify-content-center align-items-center text-muted">
+                                    <i class="fa-solid fa-image fs-1"></i>
+                                </div>
+                            }
+                            @if (item.Category != null)
+                            {
+                                <span class="badge bg-primary position-absolute top-0 start-0 m-2 shadow-sm">
+                                    @item.Category.Name
+                                </span>
+                            }
+                        </div>
+
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title fw-bold text-truncate mb-1" title="@item.Name">@item.Name</h5>
+                            <p class="text-muted small mb-2">By @(item.Seller?.FullName ?? "Unknown Seller")</p>
+                            
+                            <div class="mt-auto d-flex justify-content-between align-items-center">
+                                <span class="fs-5 fw-bold text-success">$@item.Price.ToString("0.00")</span>
+                                @if (item.StockQuantity > 0)
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle">In Stock</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Sold Out</span>
+                                }
+                            </div>
+                        </div>
+
+                        <div class="card-footer bg-white border-top-0 pt-0 d-flex gap-2">
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-outline-primary w-100 btn-sm">
+                                <i class="fa-solid fa-eye me-1"></i> View
+                            </a>
+                            @if (item.StockQuantity > 0)
+                            {
+                                <form asp-controller="Cart" asp-action="AddToCart" method="post" class="w-100">
+                                    <input type="hidden" name="productId" value="@item.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button type="submit" class="btn btn-primary w-100 btn-sm">
+                                        <i class="fa-solid fa-cart-plus"></i> Add
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+<style>
+    .transition-hover { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+    .transition-hover:hover { transform: translateY(-5px); box-shadow: 0 .5rem 1rem rgba(0,0,0,.15)!important; z-index: 1; }
+</style>

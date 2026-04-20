@@ -1,0 +1,86 @@
+﻿@model Register
+
+@{
+    ViewData["Title"] = "Create an Account";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 col-lg-6">
+            <div class="card shadow border-0 rounded-4 mt-4 mb-5">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h3 class="fw-bold">Join UShop Today</h3>
+                        <p class="text-muted">Fill out the details below to get started</p>
+                    </div>
+
+                    <form asp-action="Register" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger small mb-3"></div>
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <label asp-for="UserType" class="form-label fw-semibold">I want to register as
+                                    a...</label>
+                                <select asp-for="UserType" class="form-select form-select-lg rounded-3 bg-light">
+                                    <option value="Customer">Customer (Buying items)</option>
+                                    <option value="Seller">Seller (Selling items)</option>
+                                </select>
+                            </div>
+
+                            <div class="col-12 mt-4">
+                                <div class="form-floating">
+                                    <input asp-for="FullName" class="form-control rounded-3" placeholder="John Doe"/>
+                                    <label asp-for="FullName">Full Name</label>
+                                    <span asp-validation-for="FullName" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input asp-for="Email" class="form-control rounded-3"
+                                           placeholder="name@example.com"/>
+                                    <label asp-for="Email">Email address</label>
+                                    <span asp-validation-for="Email" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="Password" class="form-control rounded-3" placeholder="Password"/>
+                                    <label asp-for="Password">Password</label>
+                                    <span asp-validation-for="Password" class="text-danger small"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-floating">
+                                    <input asp-for="ConfirmPassword" class="form-control rounded-3"
+                                           placeholder="Confirm Password"/>
+                                    <label asp-for="ConfirmPassword">Confirm Password</label>
+                                    <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 pt-2">
+                            <button type="submit"
+                                    class="btn btn-success btn-lg w-100 fw-bold rounded-pill shadow-sm mb-3">
+                                <i class="fa-solid fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </div>
+
+                        <div class="text-center mt-3 border-top pt-3">
+                            <p class="text-muted mb-0">Already have an account?
+                                <a asp-action="Login" class="text-decoration-none fw-bold">Sign in</a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

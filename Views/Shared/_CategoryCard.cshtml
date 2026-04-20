@@ -1,0 +1,73 @@
+﻿@model IEnumerable<UShop.Models.Category>
+
+@functions {
+	private static string GetRandomColor()
+	{
+		var colors = new[] { "#e0f7fa", "#fce4ec", "#f3e5f5", "#fff3e0", "#f9fbe7", "#ede7f6" };
+		var rand = new Random();
+		return colors[rand.Next(colors.Length)];
+	}
+}
+
+@if (Model != null && Model.Any())
+{
+	<div class="row d-flex flex-wrap">
+		@foreach (var category in Model)
+		{
+			<div class="col-md-4 mb-4 d-flex">
+
+				<a class="card h-100 border-0 shadow-lg flex-fill position-relative"
+				   asp-controller="Products" asp-action="Shopping" asp-route-categoryId="@category.Id">
+
+					<!-- Overlay buttons (Admin only) -->
+					@if (User.IsInRole(Roles.Admin))
+					{
+						<div class="position-absolute top-0 end-0 m-2 d-flex gap-1">
+							<a asp-action="Details" asp-route-id="@category.Id" class="btn btn-sm btn-outline-info" title="Details">
+								<i class="fas fa-eye"></i>
+							</a>
+							<a asp-action="Edit" asp-route-id="@category.Id" class="btn btn-sm btn-outline-warning" title="Edit">
+								<i class="fas fa-edit"></i>
+							</a>
+							<a asp-action="Delete" asp-route-id="@category.Id" class="btn btn-sm btn-outline-danger" title="Delete">
+								<i class="fas fa-trash"></i>
+							</a>
+						</div>
+					}
+
+					<!-- Image or fallback -->
+					@if (!string.IsNullOrEmpty(category.ImageUrl))
+					{
+						<img src="@category.ImageUrl" class="card-img-top" alt="@category.Name" style="height:200px; object-fit:cover;" />
+					}
+					else
+					{
+						<div class="d-flex align-items-center justify-content-center"
+							 style="height:200px; background:@GetRandomColor();">
+							<i class="fas fa-image fa-3x text-muted"></i>
+						</div>
+					}
+
+					<!-- Card Body -->
+					<div class="card-body text-dark">
+						<h5 class="card-title fw-bold">@category.Name</h5>
+						<p class="card-text">
+							@(!string.IsNullOrEmpty(category.Description)
+														? category.Description
+														: "No description available")
+						</p>
+					</div>
+				</a>
+			</div>
+		}
+	</div>
+}
+else
+{
+	<div class="alert alert-info text-center">
+		No categories found.
+	</div>
+}
+
+<!-- Font Awesome (if not already included in layout) -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />

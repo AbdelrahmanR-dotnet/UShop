@@ -1,0 +1,17 @@
+﻿@model UShop.Models.Admin
+
+@{
+    ViewData["Title"] = "Admin Profile";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card p-3 shadow-sm mb-3" style="max-width: 600px;">
+    <h3>@Model.FullName</h3>
+    <p><strong>Email:</strong> @Model.Email</p>
+    <p><strong>Description:</strong> @Model.Description</p>
+    @if (Model.User != null)
+    {
+        <p><strong>Username:</strong> @Model.User.UserName</p>
+    }
+</div>

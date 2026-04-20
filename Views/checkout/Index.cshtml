@@ -1,0 +1,172 @@
+﻿@model UShop.Models.Order
+@using UShop.Models
+
+@{
+ViewData["Title"] = "Secure Checkout";
+}
+
+<div class="container mt-5">
+	<h2 class="fw-bold mb-4"><i class="fa-solid fa-lock text-success me-2"></i>Secure Checkout</h2>
+
+	<form asp-controller="Checkout" asp-action="Place" method="post" id="checkoutForm">
+		<div class="row g-4">
+			<div class="col-lg-8">
+
+				<div class="card border-0 shadow-sm mb-4 rounded-3">
+					<div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+						<h5 class="fw-bold"><i class="fa-solid fa-truck-fast me-2 text-primary"></i>Shipping Details</h5>
+					</div>
+					<div class="card-body p-4">
+						<div class="row g-3">
+							<div class="col-md-6">
+								<label class="form-label fw-semibold">Full Name</label>
+								<input type="text" class="form-control bg-light" value="@Model.Customer?.FullName" readonly />
+							</div>
+							<div class="col-md-6">
+								<label class="form-label fw-semibold">Email Address</label>
+								<input type="email" class="form-control bg-light" value="@Model.Customer?.Email" readonly />
+							</div>
+							<div class="col-12 mt-3">
+								<label class="form-label fw-semibold">Shipping Address</label>
+								@if (Model.Customer?.Address != null)
+								{
+								<textarea class="form-control bg-light" rows="2" readonly>@Model.Customer.Address.ToString()</textarea>
+								}
+								else
+								{
+								<div class="alert alert-warning py-2 mb-0">
+									<i class="fa-solid fa-triangle-exclamation me-1"></i> No address found.
+									<a asp-controller="Customer" asp-action="Edit" asp-route-id="@Model.Customer?.Id" class="alert-link">Update your profile</a> before completing checkout.
+								</div>
+								}
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="card border-0 shadow-sm rounded-3">
+					<div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+						<h5 class="fw-bold"><i class="fa-solid fa-credit-card me-2 text-primary"></i>Payment Method</h5>
+					</div>
+					<div class="card-body p-4">
+
+						<div class="form-check mb-3 p-3 border rounded-3 bg-light">
+							<input class="form-check-input ms-1 mt-2" type="radio" name="PaymentMethod" id="payCOD" value="@PaymentMethod.CashOnDelivery" checked onchange="toggleCardDetails()">
+							<label class="form-check-label fw-bold ms-2" for="payCOD">
+								Cash on Delivery (COD) <br/>
+								<small class="text-muted fw-normal">Pay with cash when your order is delivered.</small>
+							</label>
+						</div>
+
+						<div class="form-check p-3 border rounded-3 bg-light mb-3">
+							<input class="form-check-input ms-1 mt-2" type="radio" name="PaymentMethod" id="payCard" value="@PaymentMethod.CreditCard" onchange="toggleCardDetails()">
+							<label class="form-check-label fw-bold ms-2 w-100" for="payCard">
+								Credit / Debit Card
+								<div class="float-end">
+									<i class="fa-brands fa-cc-visa fs-4 text-primary"></i>
+									<i class="fa-brands fa-cc-mastercard fs-4 text-danger"></i>
+								</div>
+								<br/><small class="text-muted fw-normal">Securely pay using your card.</small>
+							</label>
+						</div>
+
+						<div id="creditCardForm" class="d-none mt-4 p-4 border rounded-3">
+							<h6 class="fw-bold mb-3">Card Details</h6>
+							@if (Model.Customer?.CreditCard != null)
+							{
+							<div class="form-check mb-3">
+								<input class="form-check-input" type="checkbox" name="UseSavedCard" id="UseSavedCard" value="true" checked onchange="toggleNewCardInput()">
+								<label class="form-check-label fw-semibold" for="UseSavedCard">
+									Use saved card ending in •••• @Model.Customer.CreditCard.CardNumber.Substring(Math.Max(0, Model.Customer.CreditCard.CardNumber.Length - 4))
+								</label>
+							</div>
+							}
+
+							<div id="newCardInputs" class="@(Model.Customer?.CreditCard != null ? "d-none" : "")">
+								<div class="mb-3">
+									<label class="form-label">Name on Card</label>
+									<input type="text" name="CardholderName" class="form-control" placeholder="John Doe" />
+								</div>
+								<div class="mb-3">
+									<label class="form-label">Card Number</label>
+									<input type="text" name="CardNumber" class="form-control" placeholder="0000 0000 0000 0000" maxlength="16" />
+								</div>
+								<div class="row">
+									<div class="col-4">
+										<label class="form-label">Month</label>
+										<input type="number" name="ExpiryMonth" class="form-control" placeholder="MM" min="1" max="12" />
+									</div>
+									<div class="col-4">
+										<label class="form-label">Year</label>
+										<input type="number" name="ExpiryYear" class="form-control" placeholder="YYYY" min="2025" />
+									</div>
+									<div class="col-4">
+										<label class="form-label">CVV</label>
+										<input type="text" name="CVV" class="form-control" placeholder="123" maxlength="4" />
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+				</div>
+			</div>
+
+			<div class="col-lg-4">
+				<div class="card border-0 shadow-sm rounded-3 sticky-top" style="top: 100px;">
+					<div class="card-header bg-white border-bottom-0 pt-4 pb-0 px-4">
+						<h5 class="fw-bold">Order Summary</h5>
+					</div>
+					<div class="card-body p-4">
+						<ul class="list-group list-group-flush mb-4">
+							@* Assuming Items is populated if passed from checkout GET. If not, this acts as a placeholder visual *@
+							<li class="list-group-item px-0 d-flex justify-content-between align-items-center border-0">
+								<span class="text-muted">Items Total</span>
+								<span class="fw-semibold">$@Model.TotalAmount.ToString("0.00")</span>
+							</li>
+							<li class="list-group-item px-0 d-flex justify-content-between align-items-center border-bottom pb-3">
+								<span class="text-muted">Delivery Fee</span>
+								<span class="text-success fw-semibold">Free</span>
+							</li>
+							<li class="list-group-item px-0 d-flex justify-content-between align-items-center pt-3 border-0">
+								<span class="fw-bold fs-5">Total to Pay</span>
+								<span class="fw-bold fs-5 text-primary">$@Model.TotalAmount.ToString("0.00")</span>
+							</li>
+						</ul>
+
+						<button type="submit" class="btn btn-success btn-lg w-100 fw-bold rounded-pill shadow-sm" @(Model.Customer?.Address == null ? "disabled" : "")>
+							<i class="fa-solid fa-check me-2"></i> Place Order
+						</button>
+						<p class="text-center text-muted small mt-3 mb-0">
+							<i class="fa-solid fa-lock me-1"></i> Your personal data is secure.
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+
+@section Scripts {
+<script>
+	function toggleCardDetails() {
+		var isCardSelected = document.getElementById('payCard').checked;
+		var cardForm = document.getElementById('creditCardForm');
+		if (isCardSelected) {
+			cardForm.classList.remove('d-none');
+		} else {
+			cardForm.classList.add('d-none');
+		}
+	}
+
+	function toggleNewCardInput() {
+		var useSavedCard = document.getElementById('UseSavedCard');
+		var newCardInputs = document.getElementById('newCardInputs');
+		if (useSavedCard && useSavedCard.checked) {
+			newCardInputs.classList.add('d-none');
+		} else {
+			newCardInputs.classList.remove('d-none');
+		}
+	}
+</script>
+}

@@ -1,0 +1,28 @@
+﻿@model IEnumerable<UShop.Models.Category>
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<h2 class="mb-4 d-flex justify-content-between align-items-center">
+    <span>Browse Categories</span>
+    <a asp-action="Create" class="btn btn-ushop">
+        <i class="fas fa-plus"></i> Create Category
+    </a>
+</h2>
+
+<!-- Search Form -->
+<form asp-action="Index" method="get" class="mb-4">
+    <div class="input-group">
+        <input type="text" name="search" value="@ViewBag.Search"
+               class="form-control" placeholder="Search categories..." />
+        <button type="submit" class="btn btn-ushop">
+            <i class="fas fa-search"></i> Search
+        </button>
+    </div>
+</form>
+
+<!-- Render Partial -->
+@await Html.PartialAsync("_CategoryCard", Model)
+
+<!-- Font Awesome -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />

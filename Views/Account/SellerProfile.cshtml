@@ -1,0 +1,35 @@
+﻿@model UShop.Models.Seller
+
+@{
+    ViewData["Title"] = "Seller Profile";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card p-3 shadow-sm mb-3" style="max-width: 600px;">
+    <h3>@Model.FullName</h3>
+    <p><strong>Email:</strong> @Model.Email</p>
+    <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+
+    @if (!string.IsNullOrEmpty(Model.ImageUrl))
+    {
+        <p><strong>Profile Image:</strong></p>
+        <img src="@Model.ImageUrl" alt="Profile Image" style="max-width:150px; max-height:150px; border-radius:50%;" />
+    }
+
+    @if (Model.User != null)
+    {
+        <p><strong>Username:</strong> @Model.User.UserName</p>
+    }
+
+    @if (Model.Products != null && Model.Products.Any())
+    {
+        <h4>Products:</h4>
+        <ul>
+            @foreach (var product in Model.Products)
+            {
+                <li>@product.Name - Price: @product.Price.ToString("C")</li>
+            }
+        </ul>
+    }
+</div>

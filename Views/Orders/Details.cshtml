@@ -1,0 +1,926 @@
+﻿@model UShop.Models.Order
+@{
+	ViewData["Title"] = "Order Details";
+
+	// Timeline steps similar to the screenshot
+	var steps = new[] { "Ordered", "Shipped", "Out for delivery", "Delivered" };
+
+	// Map your statuses to the timeline index
+	int activeIndex = 0;
+	switch (Model.Status)
+	{
+		case UShop.Models.OrderStatus.Pending:
+		case UShop.Models.OrderStatus.Processing:
+			activeIndex = 0; // Ordered
+			break;
+		case UShop.Models.OrderStatus.Shipped:
+			activeIndex = 1; // Shipped
+			break;
+		case UShop.Models.OrderStatus.Delivered:
+			activeIndex = 3; // Delivered
+			break;
+		case UShop.Models.OrderStatus.Cancelled:
+			activeIndex = -1; // Special handling below
+			break;
+		default:
+			activeIndex = 0;
+			break;
+	}
+
+	// Friendly headline
+	string headline = Model.Status switch
+	{
+		UShop.Models.OrderStatus.Delivered => "Delivered",
+		UShop.Models.OrderStatus.Shipped => "On the way",
+		UShop.Models.OrderStatus.Cancelled => "Order cancelled",
+		_ => "Arriving soon"
+	};
+
+	var firstItem = Model.Items?.FirstOrDefault();
+	var firstImage = firstItem?.Product?.ImageUrl;
+	bool canCancel = Model.Status == UShop.Models.OrderStatus.Pending || Model.Status == UShop.Models.OrderStatus.Processing;
+}
+<div class="container my-5 ush-order-page">
+	<!-- Header -->
+	<div class="d-flex justify-content-between align-items-center mb-4 ush-order-header">
+		<div class="d-flex align-items-center gap-3">
+			@if (!string.IsNullOrWhiteSpace(firstImage))
+			{
+				<img src="@firstImage" alt="First item" class="ush-order-thumb" />
+			}
+			<div>
+				<div class="ush-order-headline">@headline</div>
+				<div class="ush-order-subtle">Order #@Model.Id</div>
+			</div>
+		</div>
+		<a asp-action="Index" class="ush-order-link">See all orders</a>
+	</div>
+
+	<!-- Timeline -->
+	@if (Model.Status != UShop.Models.OrderStatus.Cancelled)
+	{
+		<nav class="ush-order-tracker" aria-label="Order progress">
+			<ol class="ush-order-steps p-0 m-0 d-flex align-items-center" role="list">
+				@for (int i = 0; i < steps.Length; i++)
+				{
+					var stepClass = (activeIndex > i) ? "is-complete"
+					: (activeIndex == i) ? "is-current"
+					: "is-upcoming";
+					<li class="ush-order-step @stepClass" role="listitem" aria-current="@(activeIndex == i ? "step" : "false")">
+						<div class="ush-order-step-dot" aria-hidden="true"></div>
+						<div class="ush-order-step-title">@steps[i]</div>
+					</li>
+					@if (i < steps.Length - 1)
+					{
+						var connClass = (activeIndex > i) ? "is-complete" : "is-upcoming";
+						<li class="ush-order-connector @connClass" aria-hidden="true"></li>
+					}
+				}
+			</ol>
+		</nav>
+	}
+	else
+	{
+		<div class="alert alert-secondary rounded-4 ush-order-cancelled mb-4">
+			❌ This order has been cancelled.
+		</div>
+	}
+
+	<!-- Info Cards Row -->
+	<div class="row g-4 mt-3">
+		<!-- Delivery info -->
+		<div class="col-lg-4">
+			<div class="card border-0 shadow-sm rounded-4 ush-order-card h-100">
+				<div class="card-body">
+					<div class="d-flex justify-content-between align-items-center mb-2">
+						<h5 class="m-0 ush-order-card-title">Delivery info</h5>
+						<span class="badge rounded-pill ush-order-badge">@Model.Status</span>
+					</div>
+					<p class="mb-2 text-muted">Date: @Model.OrderDate.ToString("dd/MM/yyyy")</p>
+					<a href="#" class="btn btn-outline-primary btn-sm rounded-pill px-3">Update delivery instructions</a>
+				</div>
+			</div>
+		</div>
+
+		<!-- Customer & Summary -->
+		<div class="col-lg-4">
+			<div class="card border-0 shadow-sm rounded-4 ush-order-card h-100">
+				<div class="card-body">
+					<h5 class="ush-order-card-title mb-2">Customer & Summary</h5>
+					<p class="mb-1"><strong>Customer:</strong> @Model.Customer?.FullName</p>
+					<p class="mb-3 text-muted">Items: @Model.Items?.Count()</p>
+					<div class="d-flex align-items-baseline gap-2">
+						<span class="text-muted">Total:</span>
+						<span class="fw-bold fs-5 text-primary">@Model.TotalAmount.ToString("C")</span>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Order actions -->
+		<div class="col-lg-4">
+			<div class="card border-0 shadow-sm rounded-4 ush-order-card h-100">
+				<div class="card-body d-flex flex-column">
+					<h5 class="ush-order-card-title mb-3">Order actions</h5>
+
+					<div class="d-flex flex-wrap gap-2 mb-3">
+						<a asp-action="Index" class="btn btn-light border rounded-pill px-3">View all orders</a>
+						<a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-light border rounded-pill px-3">View details</a>
+					</div>
+
+					@if (canCancel)
+					{
+						<div class="alert alert-warning py-2 px-3 rounded-3 mb-3">
+							📋 You can cancel this order while it’s still being processed.
+						</div>
+						<a asp-action="CancelConfirmation" asp-route-id="@Model.Id"
+						   class="btn btn-danger rounded-pill px-3 align-self-start">🚫 Cancel Order</a>
+					}
+					else if (Model.Status == UShop.Models.OrderStatus.Shipped)
+					{
+						<div class="alert alert-info py-2 px-3 rounded-3 mb-0">
+							🚚 This order has been shipped and can’t be cancelled.
+						</div>
+					}
+					else if (Model.Status == UShop.Models.OrderStatus.Delivered)
+					{
+						<div class="alert alert-success py-2 px-3 rounded-3 mb-0">
+							✅ Delivered successfully!
+						</div>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+
+	@* <!-- Items grid -->
+	<h5 class="mt-5 mb-3 ush-order-section-title">Items in this order</h5>
+	<div class="row g-4">
+		@foreach (var item in Model.Items)
+		{
+			<div class="col-6 col-sm-6 col-md-4 col-lg-3">
+				<div class="card h-100 border-0 shadow-sm rounded-4 ush-order-product-card">
+					<div class="ratio ratio-1x1 bg-light rounded-top-4 ush-order-product-media">
+						<img src="@item.Product?.ImageUrl" alt="@item.Product?.Name" class="img-fluid p-3" style="object-fit: contain;">
+					</div>
+					<div class="card-body text-center">
+						<div class="fw-semibold text-dark text-truncate" title="@item.Product?.Name">@item.Product?.Name</div>
+						<div class="text-muted small">Qty: @item.Quantity</div>
+						<div class="text-muted small">Unit: @item.UnitPrice.ToString("C")</div>
+						<div class="fw-bold text-primary mt-1">Total: @item.TotalPrice.ToString("C")</div>
+					</div>
+				</div>
+			</div>
+		}
+	</div> *@
+	<!-- Order Items Section -->
+	<div class="items-section-ushop">
+		<h3 class="items-title-ushop">Order Items</h3>
+		<div class="items-grid-ushop">
+			@foreach (var item in Model.Items)
+			{
+				<div class="item-card-ushop">
+					<div class="item-image-wrapper-ushop">
+						<img src="@item.Product?.ImageUrl"
+							 alt="@item.Product?.Name"
+							 class="item-image-ushop">
+					</div>
+					<div class="item-details-ushop">
+						<h4 class="item-name-ushop">@item.Product?.Name</h4>
+						<div class="item-meta-ushop">
+							<span class="item-quantity-ushop">Qty: @item.Quantity</span>
+							<span class="item-price-ushop">@item.UnitPrice.ToString("C")</span>
+						</div>
+						<div class="item-total-ushop">
+							Total: @item.TotalPrice.ToString("C")
+						</div>
+					</div>
+				</div>
+			}
+		</div>
+	</div>
+
+	<!-- TempData Messages -->
+	@if (TempData["Success"] != null)
+	{
+		<div class="alert alert-success alert-dismissible fade show mt-4 shadow-sm" role="alert">
+			✅ @TempData["Success"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+	}
+	@if (TempData["Error"] != null)
+	{
+		<div class="alert alert-danger alert-dismissible fade show mt-4 shadow-sm" role="alert">
+			❌ @TempData["Error"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+	}
+
+	<!-- Back Button -->
+	<div class="text-center mt-5">
+		<a asp-action="Index" class="btn btn-secondary btn-lg rounded-pill px-5 shadow-sm">
+			← Back to Orders
+		</a>
+	</div>
+</div>
+
+<style>
+	/* Scoped only to this page */
+	.ush-order-page {
+		--ush-accent: #0d6efd;
+		--ush-muted: #6c757d;
+		--ush-line: #e9ecef;
+		--ush-ok: #22c55e;
+		--ush-warn: #f59e0b;
+		--ush-card: #ffffff;
+	}
+
+	.ush-order-header .ush-order-thumb {
+		width: 48px;
+		height: 48px;
+		object-fit: contain;
+		border-radius: 10px;
+		background: #fff;
+		border: 1px solid #eee;
+	}
+
+	.ush-order-headline {
+		font-size: 1.35rem;
+		font-weight: 700;
+		line-height: 1.1;
+	}
+
+	.ush-order-subtle {
+		color: var(--ush-muted);
+		font-size: .95rem;
+	}
+
+	.ush-order-link {
+		text-decoration: none;
+		font-weight: 600;
+		color: var(--ush-accent);
+	}
+
+		.ush-order-link:hover {
+			text-decoration: underline;
+		}
+
+	/* Timeline */
+	.ush-order-tracker {
+		background: #fff;
+		border-radius: 1rem;
+		padding: 1.25rem;
+		box-shadow: 0 0.5rem 1.25rem rgba(0,0,0,.06);
+	}
+
+	.ush-order-steps {
+		list-style: none;
+		gap: .75rem;
+	}
+
+	.ush-order-step {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 120px;
+	}
+
+	.ush-order-step-title {
+		margin-top: .5rem;
+		font-size: .9rem;
+		color: #111;
+		text-align: center;
+		white-space: nowrap;
+	}
+
+	.ush-order-step-dot {
+		width: 34px;
+		height: 34px;
+		border-radius: 50%;
+		border: 2px solid var(--ush-line);
+		background: #fff;
+		box-shadow: 0 2px 6px rgba(0,0,0,.05);
+		position: relative;
+	}
+
+	.ush-order-step.is-upcoming .ush-order-step-title {
+		color: var(--ush-muted);
+	}
+
+	.ush-order-step.is-current .ush-order-step-dot {
+		border-color: var(--ush-accent);
+		box-shadow: 0 0 0 6px rgba(13,110,253,0.1);
+	}
+
+		.ush-order-step.is-current .ush-order-step-dot::after {
+			content: "";
+			position: absolute;
+			inset: 6px;
+			border-radius: 50%;
+			background: var(--ush-accent);
+		}
+
+	.ush-order-step.is-complete .ush-order-step-dot {
+		background: linear-gradient(135deg, #4f9cff, #0d6efd);
+		border-color: transparent;
+	}
+
+		.ush-order-step.is-complete .ush-order-step-dot::after {
+			content: "✓";
+			color: #fff;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			font-size: 0.9rem;
+			font-weight: 800;
+		}
+
+	/* Connectors */
+	.ush-order-connector {
+		height: 4px;
+		flex: 1;
+		border-radius: 999px;
+		background: var(--ush-line);
+	}
+
+		.ush-order-connector.is-complete {
+			background: linear-gradient(90deg, #4f9cff, #0d6efd);
+		}
+
+	/* Cards */
+	.ush-order-card {
+		background: var(--ush-card);
+	}
+
+	.ush-order-card-title {
+		font-weight: 700;
+	}
+
+	.ush-order-badge {
+		background: #e7f1ff;
+		color: #0b5ed7;
+	}
+
+	/* Items */
+	.ush-order-section-title {
+		font-weight: 700;
+	}
+
+	.ush-order-product-card:hover {
+		transform: translateY(-3px);
+		transition: .2s ease;
+		box-shadow: 0 .75rem 1.5rem rgba(0,0,0,.08);
+	}
+
+	.ush-order-product-media {
+		border-bottom: 1px solid #f1f1f1;
+	}
+
+	/* Cancelled banner */
+	.ush-order-cancelled {
+		border: 1px dashed #d0d0d0;
+	}
+
+	@@media (max-width: 576px) {
+		.ush-order-step {
+			min-width: 90px;
+		}
+
+		.ush-order-headline {
+			font-size: 1.1rem;
+		}
+	}
+</style>
+
+<style>
+    /* Container and Layout */
+    .order-detail-container-ushop {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    }
+
+    /* Header Section */
+    .order-header-ushop {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .order-title-section-ushop {
+        flex: 1;
+    }
+
+    .order-main-title-ushop {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .order-subtitle-ushop {
+        color: #6b7280;
+        margin: 0;
+        font-size: 1rem;
+    }
+
+    .back-btn-ushop {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #3b82f6;
+        text-decoration: none;
+        font-weight: 500;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.2s;
+    }
+
+        .back-btn-ushop:hover {
+            background: #eff6ff;
+            color: #2563eb;
+        }
+
+    /* Timeline Section */
+    .timeline-container-ushop {
+        background: white;
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+
+    .timeline-header-ushop {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .timeline-title-ushop {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .timeline-date-ushop {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin: 0;
+    }
+
+    .timeline-progress-ushop {
+        position: relative;
+        padding: 2rem 0;
+    }
+
+    .progress-bar-bg-ushop {
+        position: absolute;
+        top: 50%;
+        left: 10%;
+        right: 10%;
+        height: 4px;
+        background: #e5e7eb;
+        border-radius: 2px;
+        transform: translateY(-50%);
+    }
+
+    .progress-bar-fill-ushop {
+        height: 100%;
+        background: linear-gradient(90deg, #3b82f6, #2563eb);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    .timeline-steps-ushop {
+        display: flex;
+        justify-content: space-between;
+        position: relative;
+        z-index: 1;
+    }
+
+    .timeline-step-ushop {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        opacity: 0.5;
+        transition: opacity 0.3s;
+    }
+
+        .timeline-step-ushop.active {
+            opacity: 1;
+        }
+
+    .step-circle-ushop {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: white;
+        border: 3px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        color: #9ca3af;
+        transition: all 0.3s;
+    }
+
+    .timeline-step-ushop.active .step-circle-ushop {
+        border-color: #3b82f6;
+        background: #3b82f6;
+        color: white;
+        box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+    }
+
+    .step-number-ushop {
+        font-size: 1rem;
+    }
+
+    .step-label-ushop {
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #6b7280;
+        text-align: center;
+    }
+
+    .timeline-step-ushop.active .step-label-ushop {
+        color: #111827;
+    }
+
+    /* Cancelled Banner */
+    .cancelled-banner-ushop {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .cancelled-icon-ushop {
+        font-size: 2rem;
+    }
+
+    .cancelled-title-ushop {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #991b1b;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .cancelled-text-ushop {
+        color: #dc2626;
+        margin: 0;
+        font-size: 0.875rem;
+    }
+
+    /* Info Cards Grid */
+    .info-cards-grid-ushop {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card-ushop {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s;
+    }
+
+        .info-card-ushop:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+    .card-header-ushop {
+        background: #f9fafb;
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .card-title-ushop {
+        font-size: 1.125rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0;
+    }
+
+    .card-content-ushop {
+        padding: 1.5rem;
+    }
+
+    .info-row-ushop {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+        .info-row-ushop:last-child {
+            border-bottom: none;
+        }
+
+    .info-label-ushop {
+        color: #6b7280;
+        font-size: 0.875rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .info-value-ushop {
+        color: #111827;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    /* Customer Section */
+    .customer-name-ushop {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+
+    .customer-avatar-ushop {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 1.25rem;
+    }
+
+    .customer-fullname-ushop {
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.25rem 0;
+    }
+
+    .customer-label-ushop {
+        color: #6b7280;
+        font-size: 0.75rem;
+        margin: 0;
+    }
+
+    /* Total Row */
+    .total-row-ushop {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 0 0.5rem;
+        margin-top: 0.5rem;
+        border-top: 2px solid #e5e7eb;
+    }
+
+    .total-label-ushop {
+        font-weight: 600;
+        color: #111827;
+    }
+
+    .total-value-ushop {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #3b82f6;
+    }
+
+    /* Cancel Button */
+    .cancel-order-btn-ushop {
+        display: block;
+        width: 100%;
+        text-align: center;
+        background: #ef4444;
+        color: white;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        text-decoration: none;
+        font-weight: 500;
+        margin-top: 1rem;
+        transition: background 0.2s;
+    }
+
+        .cancel-order-btn-ushop:hover {
+            background: #dc2626;
+        }
+
+    /* Delivery Success */
+    .delivery-success-ushop {
+        background: #f0fdf4;
+        color: #16a34a;
+        padding: 0.75rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        font-weight: 500;
+        margin-top: 1rem;
+        border: 1px solid #bbf7d0;
+    }
+
+    /* Items Section */
+    .items-section-ushop {
+        background: white;
+        border-radius: 1rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .items-title-ushop {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 1.5rem 0;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid #e5e7eb;
+    }
+
+    .items-grid-ushop {
+        display: grid;
+        gap: 1rem;
+    }
+
+    .item-card-ushop {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem;
+        background: #f9fafb;
+        border-radius: 0.75rem;
+        transition: background 0.2s;
+    }
+
+        .item-card-ushop:hover {
+            background: #f3f4f6;
+        }
+
+    .item-image-wrapper-ushop {
+        width: 80px;
+        height: 80px;
+        flex-shrink: 0;
+        background: white;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0.5rem;
+    }
+
+    .item-image-ushop {
+        max-width: 100%;
+        max-height: 100%;
+        object-fit: contain;
+    }
+
+    .item-details-ushop {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .item-name-ushop {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.5rem 0;
+    }
+
+    .item-meta-ushop {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.875rem;
+        color: #6b7280;
+        margin-bottom: 0.25rem;
+    }
+
+    .item-quantity-ushop {
+        background: white;
+        padding: 0.125rem 0.5rem;
+        border-radius: 0.25rem;
+    }
+
+    .item-price-ushop {
+        font-weight: 500;
+    }
+
+    .item-total-ushop {
+        font-weight: 600;
+        color: #3b82f6;
+        font-size: 0.875rem;
+    }
+
+    /* Alerts */
+    .alert-ushop {
+        position: fixed;
+        top: 2rem;
+        right: 2rem;
+        padding: 1rem 1.5rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        min-width: 300px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+        animation: slideInRight-ushop 0.3s ease;
+    }
+
+    .alert-success-ushop {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        color: #16a34a;
+    }
+
+    .alert-error-ushop {
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #dc2626;
+    }
+
+    .alert-close-ushop {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        opacity: 0.7;
+        transition: opacity 0.2s;
+        padding: 0;
+        line-height: 1;
+    }
+
+        .alert-close-ushop:hover {
+            opacity: 1;
+        }
+
+    @@keyframes slideInRight-ushop {
+        from
+
+    {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    }
+
+    /* Responsive Design */
+    @@media (max-width: 768px) {
+        .order-header-ushop
+
+    {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .timeline-steps-ushop {
+        padding: 0 1rem;
+    }
+
+    .step-label-ushop {
+        font-size: 0.75rem;
+    }
+
+    .step-circle-ushop {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .info-cards-grid-ushop {
+        grid-template-columns: 1fr;
+    }
+
+    .item-card-ushop {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .item-image-wrapper-ushop {
+        margin: 0 auto;
+    }
+
+    .alert-ushop {
+        right: 1rem;
+        left: 1rem;
+        min-width: auto;
+    }
+
+    }
+</style>

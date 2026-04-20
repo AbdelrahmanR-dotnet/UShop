@@ -1,0 +1,211 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using UShop.Data
+@using UShop.Models
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>@ViewData["Title"] - UShop</title>
+	<link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+	<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/UShop.styles.css" asp-append-version="true" />
+	<link rel="stylesheet" href="~/css/SearchBar.css" />
+
+	<link rel="icon" href="~/assets/images/favicon/1.png" type="image/x-icon">
+	<link rel="shortcut icon" href="~/assets/images/favicon/1.png" type="image/x-icon">
+
+	<!-- Swiper -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+	<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+
+	<!-- Google font -->
+	<link href="https://fonts.googleapis.com/css?family=Lato:300,400,700,900" rel="stylesheet">
+
+	<!-- Icons -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/fontawesome.css">
+
+	<!-- Slick slider css -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/slick.css">
+	<link rel="stylesheet" type="text/css" href="~/assets/css/slick-theme.css">
+
+	<!-- Animate icon -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/animate.css">
+
+	<!-- Themify icon -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/themify-icons.css">
+
+	<!-- Bootstrap css -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/bootstrap.css">
+
+	<!-- Font Awesome (CDN) -->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+	<!-- Theme css -->
+	<link rel="stylesheet" type="text/css" href="~/assets/css/color1.css" media="screen" id="color">
+
+	<style>
+		/* Navbar gradient */
+		.navbar-custom {
+			background: linear-gradient(90deg, #ff6f61, #ffcc70, #6a82fb);
+		}
+
+			.navbar-custom .nav-link,
+			.navbar-custom .navbar-brand {
+				color: white !important;
+				font-weight: 600;
+			}
+
+				.navbar-custom .nav-link:hover {
+					text-decoration: underline;
+				}
+
+		/* Hero Section */
+		.hero {
+			background: linear-gradient(135deg, #ff9a9e, #fad0c4, #fad0c4);
+			padding: 50px 20px;
+			text-align: center;
+			border-radius: 12px;
+			color: #333;
+			margin-bottom: 20px;
+		}
+
+			.hero h1 {
+				font-size: 3rem;
+				font-weight: bold;
+			}
+
+			.hero p {
+				font-size: 1.2rem;
+				margin-bottom: 15px;
+			}
+
+		/* Buttons */
+		.btn-ushop {
+			background: linear-gradient(90deg, #ff6f61, #6a82fb);
+			color: white;
+			border: none;
+			border-radius: 25px;
+			padding: 10px 25px;
+			font-weight: bold;
+			transition: 0.3s;
+		}
+
+			.btn-ushop:hover {
+				background: linear-gradient(90deg, #6a82fb, #ff6f61);
+				transform: scale(1.05);
+			}
+
+		/* Footer */
+		footer {
+			background: linear-gradient(90deg, #6a82fb, #ffcc70);
+			color: white;
+			padding: 15px 0;
+			text-align: center;
+			font-weight: 500;
+		}
+
+			footer a {
+				color: #ffe;
+				text-decoration: underline;
+			}
+	</style>
+</head>
+<body>
+	<header>
+		<nav class="navbar navbar-expand-sm navbar-custom shadow-sm">
+			<div class="container-fluid">
+				<a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">🛒 UShop</a>
+				<button class="navbar-toggler bg-light" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse">
+					<span class="navbar-toggler-icon"></span>
+				</button>
+				<div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
+					<ul class="navbar-nav me-auto">
+						<li class="nav-item">
+							@await Html.PartialAsync("_SearchBar")
+						</li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Products" asp-action="Shopping">Products</a></li>
+						<li class="nav-item"><a class="nav-link" asp-controller="Categories" asp-action="Index">Categories</a></li>
+					</ul>
+					<li class="nav-item"><a class="nav-link" asp-controller="Cart" asp-action="Index">🛒Cart</a></li>
+
+					<!-- Admin Dropdown Menu  (Customers, Sellers, Admin, ProductsAll)-->
+					@if (User.IsInRole(Roles.Admin))
+					{
+						<li class="nav-item dropdown">
+							<a class="nav-link dropdown-toggle fw-bold" href="#" id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+								⚙️ administrations
+							</a>
+							<ul class="dropdown-menu-admin dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 p-2" aria-labelledby="adminDropdown">
+								<li>
+									<a class="dropdown-item-admin dropdown-item rounded-2 py-2 px-3" asp-controller="Customer" asp-action="Index">
+										👤 Customers
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item-admin dropdown-item rounded-2 py-2 px-3" asp-controller="Seller" asp-action="Browse">
+										🛍️ Sellers
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item-admin  dropdown-item rounded-2 py-2 px-3" asp-controller="Admin" asp-action="Index">
+										🛠️ Admins
+									</a>
+								</li>
+								<li>
+									<a class="dropdown-item-admin  dropdown-item rounded-2 py-2 px-3" asp-controller="Products" asp-action="Index">
+										All Products
+									</a>
+								</li>
+							</ul>
+						</li>
+					}
+
+
+					<style>
+						@@media (min-width: 992px) {
+							.nav-item.dropdown:hover .dropdown-menu {
+								display: block;
+								opacity: 1;
+								margin-top: 0;
+							}
+						}
+
+						.dropdown-menu-admin .dropdown-item-admin:hover {
+							background-color: #f8f9fa; /* light gray */
+							transform: translateX(5px);
+							transition: all 0.2s ease;
+							left: 50% !important;
+						}
+
+					</style>
+
+					<!-- User Dropdown Menu -->
+					@await Html.PartialAsync("_UserMenu")
+
+
+				</div>
+			</div>
+		</nav>
+	</header>
+
+	<!-- Main Content -->
+	<div class="container mt-3">
+		<main role="main" class="pb-3">
+			@RenderSection("Styles", required: false)
+			@RenderBody()
+		</main>
+	</div>
+
+	<footer>
+		<div class="container">
+			&copy; 2025 - UShop | <a asp-controller="Home" asp-action="Privacy">Privacy Policy</a>
+		</div>
+	</footer>
+
+	<script src="~/lib/jquery/dist/jquery.min.js"></script>
+	<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+	<script src="~/js/site.js" asp-append-version="true"></script>
+	@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

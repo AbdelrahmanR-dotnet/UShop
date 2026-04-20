@@ -1,0 +1,314 @@
+﻿@model IEnumerable<UShop.Models.Order>
+@{
+	ViewData["Title"] = "My Orders";
+	var steps = new[] { "Ordered", "Shipped", "Out for delivery", "Delivered" };
+}
+
+<div class="container my-5 ush-orders-page">
+
+	<h2 class="mb-4 text-center text-dark">My Orders 🛒</h2>
+
+	<!-- Messages -->
+	@if (TempData["Success"] != null)
+	{
+		<div class="alert alert-success alert-dismissible fade show" role="alert">
+			<strong>✅ Success!</strong> @TempData["Success"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+	}
+	@if (TempData["Error"] != null)
+	{
+		<div class="alert alert-danger alert-dismissible fade show" role="alert">
+			<strong>❌ Error!</strong> @TempData["Error"]
+			<button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+		</div>
+	}
+
+	<!-- Orders Table -->
+	<div class="ush-orders-table-wrapper shadow-sm rounded-4 p-3 bg-white">
+		<table class="table table-hover align-middle ush-orders-table mb-0">
+			<thead class="table-light">
+				<tr>
+					<th>Order #</th>
+					<th>Date</th>
+					<th>Customer</th>
+					<th>Items</th>
+					<th>Status</th>
+					<th>Progress</th>
+					<th>Total</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var order in Model)
+				{
+					var statusClass = order.Status switch
+					{
+						UShop.Models.OrderStatus.Pending => "is-pending",
+						UShop.Models.OrderStatus.Processing => "is-processing",
+						UShop.Models.OrderStatus.Shipped => "is-shipped",
+						UShop.Models.OrderStatus.Delivered => "is-delivered",
+						UShop.Models.OrderStatus.Cancelled => "is-cancelled",
+						_ => "is-pending"
+					};
+
+					// Step index for the stepper
+					int stepIndex = order.Status switch
+					{
+						UShop.Models.OrderStatus.Pending => 0,
+						UShop.Models.OrderStatus.Processing => 0,
+						UShop.Models.OrderStatus.Shipped => 1,
+						UShop.Models.OrderStatus.Delivered => 3,
+						_ => -1
+					};
+
+					var itemCount = order.Items?.Count ?? 0;
+					var extra = itemCount > 3 ? itemCount - 3 : 0;
+					<tr class="ush-orders-row @(order.Status == UShop.Models.OrderStatus.Cancelled ? "table-secondary" : "")">
+						<td><strong>@order.Id</strong></td>
+						<td>@order.OrderDate</td>
+						<td>@order.Customer?.FullName</td>
+						<td>
+							<div class="d-flex align-items-center">
+								<div class="ush-orders-avatars">
+									@foreach (var item in order.Items.Take(3))
+									{
+										<img class="ush-orders-avatar" src="@item.Product?.ImageUrl" alt="@item.Product?.Name" />
+									}
+									@if (extra > 0)
+									{
+										<span class="ush-orders-more">+@extra</span>
+									}
+								</div>
+								<div class="small text-muted ms-2 text-truncate" style="max-width:180px;">
+									@string.Join(", ", order.Items.Take(2).Select(i => i.Product?.Name))
+									@(itemCount > 2 ? "…" : "")
+								</div>
+							</div>
+						</td>
+						<td>
+							<span class="ush-orders-status-pill @statusClass">@order.Status</span>
+						</td>
+						<td>
+							@if (stepIndex >= 0)
+							{
+								<ol class="ush-orders-stepper p-0 m-0 d-flex align-items-center justify-content-center" role="list">
+									@for (int i = 0; i < steps.Length; i++)
+									{
+										var cls = (stepIndex > i) ? "is-complete"
+										: (stepIndex == i) ? "is-current"
+										: "is-upcoming";
+										<li class="ush-orders-step @cls" role="listitem" aria-current="@(stepIndex == i ? "step" : "false")">
+											<span class="ush-orders-step-dot"></span>
+											<span class="ush-orders-step-title d-block mt-1 small">@steps[i]</span> <!-- titles added -->
+										</li>
+										@if (i < steps.Length - 1)
+										{
+											var conn = (stepIndex > i) ? "is-complete" : "is-upcoming";
+											<li class="ush-orders-connector @conn"></li>
+										}
+									}
+								</ol>
+							}
+							else
+							{
+								<span class="text-muted small">❌ Cancelled</span>
+							}
+						</td>
+						<td><strong class="text-primary">@order.TotalAmount.ToString("C")</strong></td>
+						<td>
+							<a asp-action="Details" asp-route-id="@order.Id" class="btn btn-sm ush-orders-btn">View</a>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<style>
+	/* Page colors */
+	.ush-orders-page {
+		--uo-accent: #0d6efd;
+		--uo-muted: #6b7280;
+		--uo-line: #e9ecef;
+		--uo-bg: #ffffff;
+		--uo-ok: #22c55e;
+		--uo-warn: #f59e0b;
+		--uo-ship: #0ea5e9;
+		--uo-cancel: #9ca3af;
+	}
+
+	.ush-orders-table-wrapper {
+		background: #f9fafb;
+	}
+
+	/* Avatars */
+	.ush-orders-avatars {
+		display: flex;
+		align-items: center;
+	}
+
+	.ush-orders-avatar {
+		width: 36px;
+		height: 36px;
+		object-fit: cover;
+		border-radius: 8px;
+		border: 1px solid #e5e7eb;
+		background: #fff;
+		box-shadow: 0 2px 4px rgba(0,0,0,.06);
+		margin-left: -6px;
+	}
+
+		.ush-orders-avatar:first-child {
+			margin-left: 0;
+		}
+
+	.ush-orders-more {
+		width: 36px;
+		height: 36px;
+		border-radius: 8px;
+		margin-left: -6px;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		background: #f3f4f6;
+		color: #111827;
+		font-weight: 700;
+		font-size: .8rem;
+		border: 1px solid #e5e7eb;
+	}
+
+	/* Status pill styles */
+	.ush-orders-status-pill {
+		font-weight: 700;
+		font-size: .75rem;
+		padding: .35rem .6rem;
+		border-radius: 999px;
+		white-space: nowrap;
+	}
+
+		.ush-orders-status-pill.is-pending {
+			background: #fff3cd;
+			color: #997404;
+		}
+
+		.ush-orders-status-pill.is-processing {
+			background: #e0f2fe;
+			color: #0369a1;
+		}
+
+		.ush-orders-status-pill.is-shipped {
+			background: #dbeafe;
+			color: #1d4ed8;
+		}
+
+		.ush-orders-status-pill.is-delivered {
+			background: #dcfce7;
+			color: #166534;
+		}
+
+		.ush-orders-status-pill.is-cancelled {
+			background: #f3f4f6;
+			color: #374151;
+		}
+
+	/* Stepper */
+	.ush-orders-stepper {
+		list-style: none;
+		gap: .5rem;
+	}
+
+	.ush-orders-step {
+		display: flex;
+		align-items: center;
+		flex-direction: column;
+		min-width: 60px;
+	}
+
+	.ush-orders-step-dot {
+		width: 16px;
+		height: 16px;
+		border-radius: 50%;
+		border: 2px solid var(--uo-line);
+		background: #fff;
+		position: relative;
+	}
+
+	.ush-orders-step-title {
+		margin-top: .25rem;
+		font-size: .7rem;
+		color: #111;
+		white-space: nowrap;
+	}
+
+	.ush-orders-step.is-upcoming .ush-orders-step-title {
+		color: var(--uo-muted);
+	}
+
+	.ush-orders-step.is-current .ush-orders-step-dot {
+		border-color: var(--uo-accent);
+		box-shadow: 0 0 0 3px rgba(13,110,253,.15);
+	}
+
+		.ush-orders-step.is-current .ush-orders-step-dot::after {
+			content: "";
+			position: absolute;
+			inset: 3px;
+			border-radius: 50%;
+			background: var(--uo-accent);
+		}
+
+	.ush-orders-step.is-complete .ush-orders-step-dot {
+		background: linear-gradient(135deg,#4f9cff,var(--uo-accent));
+		border-color: transparent;
+	}
+
+		.ush-orders-step.is-complete .ush-orders-step-dot::after {
+			content: "✓";
+			color: #fff;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%,-50%);
+			font-size: .6rem;
+			font-weight: 800;
+		}
+
+	.ush-orders-connector {
+		height: 2px;
+		flex: 1;
+		border-radius: 999px;
+		background: var(--uo-line);
+	}
+
+		.ush-orders-connector.is-complete {
+			background: linear-gradient(90deg,#4f9cff,var(--uo-accent));
+		}
+
+	/* Buttons */
+	.ush-orders-btn {
+		color: #fff;
+		background: linear-gradient(135deg,#4f9cff,var(--uo-accent));
+		border: none;
+		border-radius: 999px;
+		padding: .35rem .75rem;
+		font-weight: 700;
+	}
+
+		.ush-orders-btn:hover {
+			filter: brightness(.95);
+			color: #fff;
+		}
+
+	/* Responsive tweaks */
+	@@media (max-width:768px) {
+		.ush-orders-step {
+			min-width: 50px;
+		}
+
+		.ush-orders-stepper {
+			gap: .25rem;
+		}
+	}
+</style>

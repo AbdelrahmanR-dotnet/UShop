@@ -1,0 +1,148 @@
+﻿@model UShop.Models.Order
+
+<h2 class="mb-4">Buy Now</h2>
+
+<!-- Customer Info -->
+<div class="card shadow-sm p-3 mb-4">
+    <h4>Customer Info</h4>
+    <p><strong>@Model.Customer.FullName</strong></p>
+    <p>@Model.Customer.Email</p>
+    <p>@Model.Customer.PhoneNumber</p>
+    <p>@Model.Customer.Address</p>
+</div>
+
+<!-- Product -->
+<div class="card shadow-sm p-3 mb-4">
+    <h4>Product</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Product</th>
+                <th>Qty</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@item.Product?.Name</td>
+                    <td>@item.Quantity</td>
+                    <td>@item.UnitPrice.ToString("C")</td>
+                    <td>@item.TotalPrice.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <p class="fw-bold text-end">Total: @Model.TotalAmount.ToString("C")</p>
+</div>
+
+<!-- Payment Method -->
+<div class="card shadow-sm p-3">
+    <h4>Payment Method</h4>
+    <form id="buyNowForm" asp-action="BuyNow" method="post">
+        <input type="hidden" asp-for="CustomerId" />
+        <input type="hidden" name="productId" value="@Model.Items.First().ProductId" />
+        <input type="hidden" name="quantity" value="@Model.Items.First().Quantity" />
+
+        <!-- Payment Method Select -->
+        <div class="mb-3">
+            <select asp-for="PaymentMethod" class="form-control" id="paymentMethod">
+                <option value="CashOnDelivery">Cash on Delivery</option>
+                <option value="CreditCard">Credit Card</option>
+            </select>
+        </div>
+
+        <!-- Credit Card Section -->
+        <div id="creditCardSection" style="display:none;">
+            @if (Model.Customer?.CreditCard != null)
+            {
+                <div class="mb-3">
+                    <label class="form-label">Saved Card</label>
+                    <select class="form-control" name="UseSavedCard" id="useSavedCard">
+                        <option value="true">
+                            **** **** **** @Model.Customer.CreditCard.CardNumber.Substring(Model.Customer.CreditCard.CardNumber.Length - 4)
+                            (exp: @Model.Customer.CreditCard.ExpiryMonth/@Model.Customer.CreditCard.ExpiryYear)
+                        </option>
+                        <option value="false">Use a new card</option>
+                    </select>
+                </div>
+            }
+
+            <!-- New Card Form -->
+            <div id="newCardForm" style="display:@(Model.Customer?.CreditCard == null ? "block" : "none");">
+                <div class="mb-3">
+                    <label class="form-label">Card Number</label>
+                    <input id="CardNumber" name="CardNumber" class="form-control" />
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Cardholder Name</label>
+                    <input id="CardHolder" name="CardHolder" class="form-control" />
+                </div>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Expiry Month</label>
+                        <input id="ExpiryMonth" name="ExpiryMonth" class="form-control" type="number" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Expiry Year</label>
+                        <input id="ExpiryYear" name="ExpiryYear" class="form-control" type="number" />
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">CVV</label>
+                        <input id="CVV" name="CVV" class="form-control" type="password" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-success w-100 mt-3">Confirm Purchase</button>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        const paymentMethod = document.getElementById("paymentMethod");
+        const creditCardSection = document.getElementById("creditCardSection");
+        const useSavedCard = document.getElementById("useSavedCard");
+        const newCardForm = document.getElementById("newCardForm");
+
+        function togglePaymentMethod() {
+            creditCardSection.style.display = paymentMethod.value === "CreditCard" ? "block" : "none";
+        }
+
+        function toggleNewCardForm() {
+            if (useSavedCard && useSavedCard.value === "false") {
+                newCardForm.style.display = "block";
+                newCardForm.querySelectorAll('input').forEach(input => input.value = '');
+            } else {
+                newCardForm.style.display = "none";
+            }
+        }
+
+        paymentMethod.addEventListener("change", togglePaymentMethod);
+        if (useSavedCard) useSavedCard.addEventListener("change", toggleNewCardForm);
+
+        togglePaymentMethod();
+        toggleNewCardForm();
+
+        document.getElementById('buyNowForm').addEventListener('submit', function (e) {
+            if (paymentMethod.value === "CreditCard") {
+                let useNew = !useSavedCard || useSavedCard.value === "false";
+                if (useNew) {
+                    const cardNumber = document.getElementById("CardNumber").value.trim();
+                    const cardHolder = document.getElementById("CardHolder").value.trim();
+                    const expiryMonth = document.getElementById("ExpiryMonth").value.trim();
+                    const expiryYear = document.getElementById("ExpiryYear").value.trim();
+                    const cvv = document.getElementById("CVV").value.trim();
+
+                    if (!cardNumber || !cardHolder || !expiryMonth || !expiryYear || !cvv) {
+                        e.preventDefault();
+                        alert("Please fill in all credit card fields.");
+                    }
+                }
+            }
+        });
+    </script>
+}

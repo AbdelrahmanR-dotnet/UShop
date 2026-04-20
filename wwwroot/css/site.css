@@ -1,0 +1,71 @@
+﻿.myCategorySwiper {
+    width: 100%;
+    /* لتعيين الارتفاع بشكل ثابت، يمكنك استخدام قيم بكسل (px) */
+    height: 350px; /* على افتراض أن هذا هو الارتفاع الذي تريده من الصورة */
+    /* أو استخدام نسبة مئوية من ارتفاع الشاشة */
+    /* height: 80vh; */ /* مثلاً 80% من ارتفاع viewport */
+
+    position: relative;
+    overflow: hidden; /* تأكد من عدم ظهور أي محتوى خارج الحاوية */
+}
+
+    .myCategorySwiper .swiper-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* تأكد أن الشرائح تملأ ارتفاع الحاوية */
+        height: 40%;
+    }
+.myCategorySwiper {
+    width: 100%;
+    /* لتعيين الارتفاع بشكل ثابت، يمكنك استخدام قيم بكسل (px) */
+    height: 350%* على افتراض أن هذا هو الارتفاع الذي تريده من الصورة */
+    /* أو استخدام نسبة مئوية من ارتفاع الشاشة */
+    /* height: 80vh; */ /* مثلاً 80% من ارتفاع viewport */
+
+    position: relative;
+    overflow: hidden; /* تأكد من عدم ظهور أي محتوى خارج الحاوية */
+}
+
+    .myCategorySwiper .swiper-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* تأكد أن الشرائح تملأ ارتفاع الحاوية */
+        height: 100%;
+    }
+.myCategorySwiper {
+    width: 100%;
+    /* لتعيين الارتفاع بشكل ثابت، يمكنك استخدام قيم بكسل (px) */
+    height: 350%; /* على افتراض أن هذا هو الارتفاع الذي تريده من الصورة */
+    /* أو استخدام نسبة مئوية من ارتفاع الشاشة */
+    /* height: 80vh; */ /* مثلاً 80% من ارتفاع viewport */
+
+    position: relative;
+    overflow: hidden; /* تأكد من عدم ظهور أي محتوى خارج الحاوية */
+}
+
+    .myCategorySwiper .swiper-slide {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        /* تأكد أن الشرائح تملأ ارتفاع الحاوية */
+        height: 350%;
+    }
+
+/* محاذاة عناصر شريط التنقل إلى اليمين */
+.navbar-collapse.justify-content-end ul.navbar-nav {
+    margin-left: auto; /* يدفع العناصر إلى اليمين */
+}
+
+/* تعديل لتنسيق عنصر البحث ليتناسب مع المحاذاة */
+.navbar-custom .form-inline {
+    margin-left: 0;
+    margin-right: auto; /* إذا كنت ترغب في دفع حقل البحث إلى اليسار */
+}
+
+/* تأكد من أن الشعار (UShop) يبقى في اليسار */
+.navbar-brand {
+    margin-right: auto;
+    margin-left: 0;
+}
